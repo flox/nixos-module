@@ -42,15 +42,11 @@ in {
 
       environment = {
         etc = {
-          "flox.toml".source = "${flox.flox-config}/etc/flox.toml";
-          # Set non-default mode to force NixOS to copy to /etc. We
-          # do this because the UNCLE namespace prevents us from
-          # storing configuration in /nix/store.
-          "flox.toml".mode = "0644";
-          "npfs.conf".source = "${flox.flox-config}/etc/npfs.conf";
-          "flox-release".source = "${flox.flox-config}/etc/flox-release";
+          "flox.toml".source = "${flox.flox-uncle}/etc/flox.toml";
+          "npfs.conf".source = "${flox.flox-uncle}/etc/npfs.conf";
+          "flox-release".source = "${flox.flox-uncle}/etc/flox-release";
         };
-        systemPackages = [ flox.floxadm flox.icfs ];
+        systemPackages = [ flox.flox-uncle ];
       };
 
       systemd.services = {
@@ -58,17 +54,17 @@ in {
           description = "Flox";
           wantedBy = [ "multi-user.target" ];
           after = [ "network.target" "local-fs.target" ];
-          path = [ flox.floxadm ];
+          path = [ flox.flox-uncle ];
           serviceConfig = {
             User = "root";
-            Type = "oneshot"; # "notify";
+            Type = "notify";
             NotifyAccess = "all";
-            ExecStart = "${flox.floxadm}/bin/floxd";
+            ExecStart = "${flox.flox-uncle}/bin/floxd";
             TimeoutSec = 300;
             Restart = "no";
             KillMode = "none";
           };
-          environment.FLOXADM_DEBUG = "1";
+          # environment.FLOXADM_DEBUG = "1";
         };
 
         # TODO: These should be undone when the service is uninstalled.
@@ -93,7 +89,7 @@ in {
             mount --make-private /run/flox
             # Bind mount namespace to path before creating child mounts.
             touch /run/flox/mnt
-            unshare --mount=/run/flox/mnt $SHELL -c '
+            unshare --mount=/run/flox/mnt $SHELL -c 'set -x && \
               mount --make-rslave /nix/store && \
               mount -t overlay overlay -olowerdir=/nix/store:/flox/store /nix/store'
           '';
@@ -104,10 +100,8 @@ in {
       # TODO: Figure out which set of permissions are necessary
       security.wrappers."floxrun" = {
         source = "${flox.floxrun}/bin/floxrun";
-        #capabilities = "cap_sys_admin+ep";
         owner = "root";
         group = "root";
-        #permissions = "u+rx,g+rx,o-rx";
       };
 
     })
