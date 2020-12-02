@@ -89,9 +89,8 @@ in {
             mount --make-private /run/flox
             # Bind mount namespace to path before creating child mounts.
             touch /run/flox/mnt
-            unshare --mount=/run/flox/mnt $SHELL -c 'set -x && \
-              mount --make-rslave /nix/store && \
-              mount -t overlay overlay -olowerdir=/nix/store:/flox/store /nix/store'
+            unshare --mount=/run/flox/mnt -- \
+              mount -t overlay overlay -olowerdir=/nix/store:/flox/store /nix/store
           '';
           serviceConfig.Type = "oneshot";
         };
