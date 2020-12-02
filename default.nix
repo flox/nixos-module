@@ -54,32 +54,16 @@ in {
           description = "Flox";
           wantedBy = [ "multi-user.target" ];
           after = [ "network.target" "local-fs.target" ];
-          path = [ flox.flox-uncle ];
+          path = [ flox.flox-uncle pkgs.utillinux ];
           serviceConfig = {
             User = "root";
             Type = "notify";
             NotifyAccess = "all";
             ExecStart = "${flox.flox-uncle}/bin/floxd";
             TimeoutSec = 300;
-            Restart = "no";
-            KillMode = "none";
           };
-          # environment.FLOXADM_DEBUG = "1";
-        };
-
-        # TODO: These should be undone when the service is uninstalled.
-        # More declarative with perhaps the fileSystems option might solve this
-        floxmnt = {
-          description = "Setup flox overlay mount namespace";
-          wantedBy = [ "multi-user.target" ];
-          requires = [ "flox.service" ];
-          after = [ "flox.service" ];
-          path = [ pkgs.utillinux ];
-          script = ''
+          postStart = ''
             set -eux
-            # First clear up any leftover mounts.
-            test ! -e /run/flox/mnt || umount -q /run/flox/mnt || true
-            test ! -e /run/flox || umount -q /run/flox || true
             # Create run directory for persisted namespace mount.
             mkdir -p /run/flox
             # Make run directory a private mount namespace as required
@@ -92,7 +76,13 @@ in {
             unshare --mount=/run/flox/mnt -- \
               mount -t overlay overlay -olowerdir=/nix/store:/flox/store /nix/store
           '';
-          serviceConfig.Type = "oneshot";
+          postStop = ''
+            set -eux
+            # Clear up mounts again
+            umount /run/flox/mnt
+            umount /run/flox
+          '';
+          # environment.FLOXADM_DEBUG = "1";
         };
       };
 
