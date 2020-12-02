@@ -50,7 +50,13 @@ in {
       };
 
       systemd.services = {
-        flox = {
+        flox = let
+          unmounting = ''
+            # Clear up mounts again
+            test ! -e /run/flox/mnt || umount -q /run/flox/mnt || true
+            test ! -e /run/flox || umount -q /run/flox || true
+          '';
+        in {
           description = "Flox";
           wantedBy = [ "multi-user.target" ];
           after = [ "network.target" "local-fs.target" ];
@@ -61,9 +67,11 @@ in {
             NotifyAccess = "all";
             ExecStart = "${flox.flox-uncle}/bin/floxd";
             TimeoutSec = 300;
+            KillMode = "process";
           };
           postStart = ''
             set -eux
+            ${unmounting}
             # Create run directory for persisted namespace mount.
             mkdir -p /run/flox
             # Make run directory a private mount namespace as required
@@ -78,9 +86,7 @@ in {
           '';
           postStop = ''
             set -eux
-            # Clear up mounts again
-            umount /run/flox/mnt
-            umount /run/flox
+            ${unmounting}
           '';
           # environment.FLOXADM_DEBUG = "1";
         };
