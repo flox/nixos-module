@@ -1,6 +1,6 @@
 # NixOS module for flox
 
-Add the following to `/etc/nixos/configuration.nix`:
+To install flox on NixOS, add the following to `/etc/nixos/configuration.nix`:
 
 ```nix
 {
@@ -10,9 +10,9 @@ Add the following to `/etc/nixos/configuration.nix`:
 }
 ```
 
-Then invoke: `sudo nixos-rebuild test --option extra-substituters 'https://beta.floxdev.com/floxchan/?trusted=1'`
+Then invoke: `sudo nixos-rebuild switch`. This will configure the binary substituter needed for flox.
 
-Then, add the following parameter to the same file:
+Once finished, add the following parameter to the same file:
 
 ```nix
 {
@@ -20,4 +20,4 @@ Then, add the following parameter to the same file:
 }
 ```
 
-... and invoke it again: `sudo nixos-rebuild test --option extra-substituters 'https://beta.floxdev.com/floxchan/?trusted=1'`
+And run `sudo nixos-rebuild switch` again. This will fully configure flox.
