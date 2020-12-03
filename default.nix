@@ -66,6 +66,7 @@ in {
             Type = "notify";
             NotifyAccess = "all";
             ExecStart = "${flox.flox-uncle}/bin/floxd";
+            ExecReload = "${flox.flox-uncle}/bin/floxadm restart";
             ExecStop = "${flox.flox-uncle}/bin/floxadm restart";
             TimeoutSec = 300;
             KillMode = "none";
@@ -86,9 +87,6 @@ in {
               mount -t overlay overlay -olowerdir=/nix/store:/flox/store /nix/store
           '';
           reloadIfChanged = true;
-          reload = ''
-            floxadm restart
-          '';
           postStop = ''
             set -eux
             ${unmounting}
