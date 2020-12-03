@@ -67,9 +67,7 @@ in {
             NotifyAccess = "all";
             ExecStart = "${flox.flox-uncle}/bin/floxd";
             ExecReload = "${flox.flox-uncle}/bin/floxadm restart";
-            ExecStop = "${flox.flox-uncle}/bin/floxadm restart";
-            TimeoutSec = 300;
-            KillMode = "none";
+            ExecStop = "${flox.flox-uncle}/bin/floxadm stop";
           };
           postStart = ''
             set -eux
