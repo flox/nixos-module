@@ -50,13 +50,7 @@ in {
       };
 
       systemd.services = {
-        flox = let
-          unmounting = ''
-            # Clear up mounts again
-            test ! -e /run/flox/mnt || umount -q /run/flox/mnt || true
-            test ! -e /run/flox || umount -q /run/flox || true
-          '';
-        in {
+        flox = {
           description = "Flox";
           wantedBy = [ "multi-user.target" ];
           wants = [ "network-online.target" "local-fs.target" ];
@@ -71,26 +65,7 @@ in {
             ExecReload = "${flox.flox-uncle}/bin/floxadm restart";
             ExecStop = "${flox.flox-uncle}/bin/floxadm stop";
           };
-          postStart = ''
-            set -eux
-            ${unmounting}
-            # Create run directory for persisted namespace mount.
-            mkdir -p /run/flox
-            # Make run directory a private mount namespace as required
-            # for persisted mounts. See:
-            # https://github.com/karelzak/util-linux/issues/289.
-            mount --bind /run/flox /run/flox
-            mount --make-private /run/flox
-            # Bind mount namespace to path before creating child mounts.
-            touch /run/flox/mnt
-            unshare --mount=/run/flox/mnt -- \
-              mount -t overlay overlay -olowerdir=/nix/store:/flox/store /nix/store
-          '';
           reloadIfChanged = true;
-          postStop = ''
-            set -eux
-            ${unmounting}
-          '';
           # environment.FLOXADM_DEBUG = "1";
         };
       };
