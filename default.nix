@@ -59,7 +59,9 @@ in {
         in {
           description = "Flox";
           wantedBy = [ "multi-user.target" ];
-          after = [ "network.target" "local-fs.target" ];
+          wants = [ "network-online.target" "local-fs.target" ];
+          requires = [ "network-online.target" "local-fs.target" ];
+          after = [ "network-online.target" "local-fs.target" ];
           path = [ flox.flox-uncle pkgs.utillinux ];
           serviceConfig = {
             User = "root";
