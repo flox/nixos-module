@@ -4,7 +4,7 @@ let
   inherit (lib) types;
   cfg = config.services.flox;
 
-  flox = import (builtins.fetchTarball "https://beta.floxdev.com/floxchan/nixexprs.tar.bz2") {};
+  flox = import (builtins.fetchTarball "https://${cfg.server}/floxchan/nixexprs.tar.bz2") {};
 in {
 
   options.services.flox = {
@@ -24,12 +24,20 @@ in {
       type = types.bool;
       default = false;
     };
+
+    server = lib.mkOption {
+      description = ''
+        Which flox server to use.
+      '';
+      type = types.str;
+      default = "beta.floxdev.com";
+    };
   };
 
   config = lib.mkIf cfg.enable (lib.mkMerge [
     {
       nix.binaryCaches = lib.mkAfter [
-        "https://beta.floxdev.com/floxchan/?trusted=1"
+        "https://${cfg.server}/floxchan/?trusted=1"
       ];
 
       warnings = lib.mkIf (! cfg.substituterAdded)
