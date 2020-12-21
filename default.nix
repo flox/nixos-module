@@ -54,7 +54,10 @@ in {
           "npfs.conf".source = "${flox.flox-uncle}/etc/npfs.conf";
           "flox-release".source = "${flox.flox-uncle}/etc/flox-release";
         };
-        systemPackages = [ flox.flox-uncle ];
+        systemPackages = [
+          flox.flox-uncle
+          flox.floxrun # to reveal man page
+        ];
       };
 
       systemd.services = {
